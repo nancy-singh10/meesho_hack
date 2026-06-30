@@ -9,6 +9,7 @@ import DashboardHome from './pages/dashboard/DashboardHome';
 import PostJob from './pages/dashboard/PostJob';
 import MatchesView from './pages/dashboard/MatchesView';
 import ContractsView from './pages/dashboard/ContractsView';
+import EmployerJobs from './pages/dashboard/EmployerJobs';
 import MyWorkers from './pages/dashboard/MyWorkers';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import WhatsappSimulator from './pages/WhatsappSimulator';
@@ -36,6 +37,7 @@ function App() {
         <Route path="/verify" element={<VerifyOTP />} />
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/dashboard/post-job" element={<PostJob />} />
+        <Route path="/dashboard/jobs" element={<EmployerJobs />} />
         <Route path="/dashboard/contracts" element={<ContractsView />} />
         <Route path="/dashboard/jobs/:id/matches" element={<MatchesView />} />
         <Route path="/dashboard/workers" element={<MyWorkers />} />

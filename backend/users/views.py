@@ -35,6 +35,7 @@ class ParseWhatsappView(APIView):
         message = request.data.get('message', '').lower()
         mobile = request.data.get('mobile_number', '9876543210')
         user_id = request.data.get('user_id')
+        user_name = request.data.get('user_name')
 
         if not message:
             return Response({"error": "Message is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -44,9 +45,13 @@ class ParseWhatsappView(APIView):
             try:
                 user = User.objects.get(id=user_id)
             except User.DoesNotExist:
-                user, _ = User.objects.get_or_create(mobile_number=mobile, defaults={'role': 'worker', 'name': 'Worker'})
+                user, _ = User.objects.get_or_create(mobile_number=mobile, defaults={'role': 'worker', 'name': user_name or 'Worker'})
         else:
-            user, _ = User.objects.get_or_create(mobile_number=mobile, defaults={'role': 'worker', 'name': 'Worker'})
+            user, _ = User.objects.get_or_create(mobile_number=mobile, defaults={'role': 'worker', 'name': user_name or 'Worker'})
+
+        if user_name and user.name != user_name and user_name != 'Worker':
+            user.name = user_name
+            user.save()
             
         profile, _ = WorkerProfile.objects.get_or_create(user=user)
 
@@ -75,6 +80,8 @@ class ParseWhatsappView(APIView):
             reply = self._run_negotiate_agent(profile, message)
         elif bot_state == 'working':
             reply = self._run_contract_agent(profile, message)
+        elif bot_state == 'waiting_for_location':
+            reply = self._run_location_agent(profile, message)
         else:
             # Fallback
             reply = "Maaf kijiye, mujhe samajh nahi aaya. Menu pe jaane ke liye 'Menu' likhein."
@@ -130,10 +137,11 @@ class ParseWhatsappView(APIView):
             
         elif message == '3':
             contract = Contract.objects.filter(worker=profile).last()
-            balance = contract.escrow_balance if contract else profile.total_earned
+            escrow = contract.escrow_balance if contract else 0
+            earned = profile.total_earned
             if en:
-                return f"💰 You have ₹{balance} in your wallet. This money is 100% secure and deposited in advance by the contractor.\n\nKaamSetu gives you a 72-hour Payment Guarantee. If the contractor delays, our system starts an Auto-Dispute.\n\n(Send 'Menu' to go back)"
-            return f"💰 Aapke batue mein ₹{balance} hain. Yeh paisa 100% surakshit hai aur thekedaar ne advance mein jama kiya hai.\n\nKaamSetu par aapko 72-hour Payment Guarantee milti hai. Agar thekedar paise nahi deta, toh hamara system Auto-Dispute shuru kar deta hai.\n\n(Menu pe wapas jaane ke liye 'Menu' bhejein)"
+                return f"💰 **Wallet Balance**\nTotal Earned: ₹{earned}\nIn Escrow: ₹{escrow}\n\nThis money is 100% secure. KaamSetu gives you a 72-hour Payment Guarantee.\n\n(Send 'Menu' to go back)"
+            return f"💰 **Aapka Batua (Wallet)**\nKul Kamai: ₹{earned}\nEscrow mein: ₹{escrow}\n\nYeh paisa 100% surakshit hai. KaamSetu par aapko 72-hour Payment Guarantee milti hai.\n\n(Menu pe wapas jaane ke liye 'Menu' bhejein)"
             
         elif message == '4':
             score = profile.trust_score
@@ -288,13 +296,14 @@ Kaunsi job apply karni hai? (1, 2, ya 3 type karein)"""
         from users.models import CustomUser
         user, _ = CustomUser.objects.get_or_create(mobile_number=f"emp_{choice_val}", defaults={'name': company, 'role': 'employer'})
         employer, _ = EmployerProfile.objects.get_or_create(user=user, defaults={'company_name': company})
-        job, _ = Job.objects.get_or_create(
+        job = Job.objects.create(
             employer=employer,
             title=f"{profile.skills[0] if profile.skills else 'Worker'} Required",
             location=profile.location,
-            defaults={'offered_wage': wage}
+            offered_wage=wage
         )
 
+        Application.objects.filter(worker=profile).delete() # Clear old apps
         Application.objects.create(job=job, worker=profile, status='negotiating')
         profile.bot_state = 'negotiating'
         profile.save()
@@ -356,27 +365,22 @@ Kaunsi job apply karni hai? (1, 2, ya 3 type karein)"""
 
         en = (profile.language == 'en')
         if "shuru" in message.lower() or "start" in message.lower() or "in" in message.lower():
-            today = timezone.now().date()
-            attendance, created = AttendanceRecord.objects.get_or_create(
-                contract=contract,
-                date=today,
-                defaults={'check_in': timezone.now()}
-            )
-            time_str = attendance.check_in.strftime("%I:%M %p")
+            profile.bot_state = 'waiting_for_location'
+            profile.save()
             if en:
-                return f"✅ Clock In Successful!\n🕒 Time: {time_str}\n📍 Live Location: 28.6139° N, 77.2090° E\n\nYour presence is verified. Have a safe day at work!"
-            return f"✅ Haazri lag gayi!\n🕒 In Time: {time_str}\n📍 Live Location: 28.6139° N, 77.2090° E\n\nAapki site par presence verify ho gayi hai. Kaam surakshit karein!"
+                return "📍 Live Location is required for Clock-in. Do you want to share it? (Reply 'Yes' or 'No')"
+            return "📍 Haazri lagane ke liye Live Location ki zarurat hogi. Kya aap share karna chahte hain? (Reply 'Haan' ya 'Nahi')"
             
         elif "khatam" in message.lower() or "out" in message.lower() or "done" in message.lower():
             today = timezone.now().date()
             try:
                 attendance = AttendanceRecord.objects.get(contract=contract, date=today)
-                if attendance.check_out is not None:
+                if attendance.check_out_time is not None:
                     if en:
                         return "You have already clocked out for today."
                     return "Aap pehle hi check-out kar chuke hain."
                 
-                attendance.check_out = timezone.now()
+                attendance.check_out_time = timezone.now()
                 attendance.proof_photo_url = "https://images.unsplash.com/photo-1541888086925-0c13bb104eb0?w=500&q=80"
                 attendance.save()
                 
@@ -410,3 +414,39 @@ Kaunsi job apply karni hai? (1, 2, ya 3 type karein)"""
         if en:
             return "Send 'Clock In' when you reach the site, and 'Clock Out' when done."
         return "Agar aap site par hain toh 'Kaam shuru' bhejein, aur kaam khatam hone par 'Kaam khatam' bhejein."
+
+    def _run_location_agent(self, profile, message):
+        """Processes the location and checks in"""
+        en = (profile.language == 'en')
+        
+        if "nahi" in message.lower() or "no" in message.lower():
+            profile.bot_state = 'working'
+            profile.save()
+            if en:
+                return "Clock-in failed. Live Location is mandatory for attendance.\n\n(Send 'Kaam shuru' to try again)"
+            return "Haazri nahi lag payi. Haazri ke liye Live Location dena zaroori hai.\n\n(Dobara koshish karne ke liye 'Kaam shuru' bhejein)"
+
+        if "haan" not in message.lower() and "yes" not in message.lower() and "ji" not in message.lower():
+            if en:
+                return "Please reply 'Yes' to share location, or 'No' to cancel."
+            return "Kripya 'Haan' likh kar location share karein, ya 'Nahi' likh kar cancel karein."
+
+        contract = Contract.objects.filter(worker=profile).last()
+        if not contract:
+            profile.bot_state = 'menu'
+            profile.save()
+            return "Koi active contract nahi mila."
+            
+        today = timezone.now().date()
+        attendance, created = AttendanceRecord.objects.get_or_create(
+            contract=contract,
+            date=today,
+            defaults={'check_in_time': timezone.now(), 'gps_location': '28.6139° N, 77.2090° E'}
+        )
+        time_str = attendance.check_in_time.strftime("%I:%M %p")
+        profile.bot_state = 'working'
+        profile.save()
+        
+        if en:
+            return f"✅ Clock In Successful!\n🕒 Time: {time_str}\n📍 Live Location: Verified!\n\nYour presence is verified. Have a safe day at work!"
+        return f"✅ Haazri lag gayi!\n🕒 In Time: {time_str}\n📍 Live Location: Verified!\n\nAapki site par presence verify ho gayi hai. Kaam surakshit karein!"

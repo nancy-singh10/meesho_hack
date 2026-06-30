@@ -14,6 +14,7 @@ const DashboardLayout = ({ children }) => {
 
   const navItems = [
     { path: '/dashboard', icon: <BarChart size={20} />, label: 'Overview' },
+    { path: '/dashboard/jobs', icon: <Briefcase size={20} />, label: 'My Jobs' },
     { path: '/dashboard/post-job', icon: <Briefcase size={20} />, label: 'Post a Job' },
     { path: '/dashboard/contracts', icon: <FileText size={20} />, label: 'Contracts' },
     { path: '/dashboard/workers', icon: <Users size={20} />, label: 'My Workers' },

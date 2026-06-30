@@ -15,6 +15,7 @@ const WorkerDashboard = () => {
   ];
 
   const recentActivity = [
+    { title: 'Expert Mason', employer: 'Sharma Contractors', date: 'Just now', amount: '₹1,800', status: 'PAID', type: 'success' },
     { title: 'RCC Shuttering', employer: 'Bhardwaj Constructions', date: '12d', amount: '₹11,400', status: 'PAID', type: 'success' },
     { title: 'Plastering', employer: 'Sharma Builders', date: '6d', amount: '₹5,400', status: 'PAID', type: 'success' },
     { title: 'Brickwork', employer: 'Goyal Infra', date: '8d', amount: '₹6,800', status: 'PAID', type: 'success' },
@@ -126,6 +127,70 @@ const WorkerDashboard = () => {
           </motion.div>
         </div>
 
+        {/* Live Contract Timeline */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-white border-2 border-emerald-100 shadow-xl shadow-emerald-200/20 rounded-3xl p-8 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></div>
+                <h3 className="text-[#1E234C] font-black text-xl tracking-tight uppercase">Live Contract: Sharma Contractors</h3>
+              </div>
+              <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-bold border border-emerald-200 flex items-center gap-2">
+                 <IndianRupee size={16} /> ₹1,800 / day
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-8 relative">
+              {/* Connecting Line */}
+              <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gray-100 -z-10 -translate-y-1/2 rounded-full overflow-hidden">
+                 <div className="h-full bg-emerald-500 w-full animate-pulse"></div>
+              </div>
+
+              {/* Step 1 */}
+              <div className="flex flex-col items-center gap-3 bg-white p-2">
+                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <CheckCircle2 size={24} />
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-[#11111A]">Contract Signed</p>
+                  <p className="text-xs text-gray-500 font-medium mt-1">Smart Escrow Funded</p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex flex-col items-center gap-3 bg-white p-2">
+                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <Activity size={24} />
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-[#11111A]">Checked In</p>
+                  <p className="text-xs text-gray-500 font-medium mt-1">GPS Verified (09:20 AM)</p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex flex-col items-center gap-3 bg-white p-2">
+                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <CheckCircle2 size={24} />
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-emerald-600">Checked Out & Paid</p>
+                  <p className="text-xs text-gray-500 font-medium mt-1">₹1,800 Escrow Released</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </motion.div>
+
         {/* 4 Mini Cards with Micro-interactions */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           
@@ -135,7 +200,7 @@ const WorkerDashboard = () => {
                 <Wallet size={20} />
             </div>
             <p className="text-[#4A4A5A] font-bold text-[10px] tracking-widest uppercase mb-1">Wallet Balance</p>
-            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">₹24,850</h3>
+            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">₹26,650</h3>
             <ArrowUpRight size={18} className="absolute top-6 right-6 text-gray-300 group-hover:text-[#1E234C] transition-colors" />
           </motion.div>
 
@@ -145,7 +210,7 @@ const WorkerDashboard = () => {
                 <Briefcase size={20} />
             </div>
             <p className="text-[#4A4A5A] font-bold text-[10px] tracking-widest uppercase mb-1">Verified Jobs</p>
-            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">47</h3>
+            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">48</h3>
             <ArrowUpRight size={18} className="absolute top-6 right-6 text-gray-300 group-hover:text-emerald-500 transition-colors" />
           </motion.div>
 
@@ -155,7 +220,7 @@ const WorkerDashboard = () => {
                 <IndianRupee size={20} />
             </div>
             <p className="text-[#4A4A5A] font-bold text-[10px] tracking-widest uppercase mb-1">Today's Wage</p>
-            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">₹950</h3>
+            <h3 className="text-3xl font-black text-[#11111A] tracking-tight">₹1,800</h3>
             <ArrowUpRight size={18} className="absolute top-6 right-6 text-gray-300 group-hover:text-[#FF6B4A] transition-colors" />
           </motion.div>
 
@@ -165,7 +230,7 @@ const WorkerDashboard = () => {
                 <Building2 size={20} />
             </div>
             <p className="text-[#4A4A5A] font-bold text-[10px] tracking-widest uppercase mb-1">Current Employer</p>
-            <h3 className="text-xl font-bold text-[#11111A] leading-tight mt-1">Bhardwaj<br/>Constructions</h3>
+            <h3 className="text-xl font-bold text-[#11111A] leading-tight mt-1">Sharma<br/>Contractors</h3>
             <ArrowUpRight size={18} className="absolute top-6 right-6 text-gray-300 group-hover:text-gray-900 transition-colors" />
           </motion.div>
         </div>

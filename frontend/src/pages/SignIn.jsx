@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, ArrowRight, ShieldCheck, CheckCircle2, User, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../config';
+
 
 const SignIn = () => {
   const [mobile, setMobile] = useState('');
@@ -42,7 +44,7 @@ const SignIn = () => {
     }
     
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/send-otp/', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-otp/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

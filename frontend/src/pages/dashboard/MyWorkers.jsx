@@ -2,10 +2,23 @@ import React, { useState } from 'react';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import { Users, Search, ShieldCheck, MapPin, IndianRupee, ArrowRight, Star, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const MyWorkers = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
+  const [selectedWorkerHistory, setSelectedWorkerHistory] = useState(null);
+  const [sendingOfferId, setSendingOfferId] = useState(null);
+  const [sentOffers, setSentOffers] = useState({});
+
+  const handleRehire = (workerId) => {
+    setSendingOfferId(workerId);
+    setTimeout(() => {
+        setSendingOfferId(null);
+        setSentOffers(prev => ({ ...prev, [workerId]: true }));
+    }, 1500);
+  };
 
   // Mock data for workers the employer has hired before
   const workers = [
@@ -19,8 +32,13 @@ const MyWorkers = () => {
       jobsCompleted: 3,
       lastWorked: '2 days ago',
       rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1506803682981-6e718a9dd3ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      isAvailable: true
+      image: '/images/workers/ramesh.png',
+      isAvailable: true,
+      history: [
+        { id: 1, title: 'Master Mason', date: 'June 15 - June 28, 2026', paid: '₹15,200', rating: 5, review: 'Excellent work, very punctual and maintained high quality.', location: 'Sector 62, Noida' },
+        { id: 2, title: 'Bricklaying', date: 'April 10 - April 22, 2026', paid: '₹14,000', rating: 5, review: 'Great finish on the boundary walls.', location: 'Sector 62, Noida' },
+        { id: 3, title: 'Mason', date: 'Jan 5 - Jan 20, 2026', paid: '₹16,400', rating: 4.8, review: 'Good speed, reliable worker.', location: 'Indirapuram' }
+      ]
     },
     {
       id: 'SHRAM-IN-2291',
@@ -32,8 +50,11 @@ const MyWorkers = () => {
       jobsCompleted: 1,
       lastWorked: '1 month ago',
       rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1543269664-7eef42226a21?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      isAvailable: false
+      image: '/images/workers/suresh.png',
+      isAvailable: false,
+      history: [
+        { id: 1, title: 'Site Helper', date: 'May 1 - May 20, 2026', paid: '₹12,400', rating: 4.5, review: 'Hardworking and follows instructions well.', location: 'Indirapuram' }
+      ]
     },
     {
       id: 'SHRAM-IN-4412',
@@ -45,8 +66,12 @@ const MyWorkers = () => {
       jobsCompleted: 2,
       lastWorked: '15 days ago',
       rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      isAvailable: true
+      image: '/images/workers/vikash.png',
+      isAvailable: true,
+      history: [
+        { id: 1, title: 'Electrician - Wiring', date: 'June 1 - June 10, 2026', paid: '₹15,000', rating: 4.9, review: 'Perfect wiring job, no issues.', location: 'Ghaziabad' },
+        { id: 2, title: 'Electrician - Fittings', date: 'March 15 - March 25, 2026', paid: '₹13,500', rating: 4.7, review: 'Good work on all light fittings.', location: 'Ghaziabad' }
+      ]
     }
   ];
 
@@ -162,14 +187,30 @@ const MyWorkers = () => {
                             </div>
                             
                             <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                                <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-[#4A4A5A] font-bold py-3 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 border border-gray-200">
+                                <button 
+                                    onClick={() => setSelectedWorkerHistory(worker)}
+                                    className="flex-1 bg-gray-50 hover:bg-gray-100 text-[#4A4A5A] font-bold py-3 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 border border-gray-200"
+                                >
                                     <History size={16} /> View History
                                 </button>
                                 <button 
-                                    disabled={!worker.isAvailable}
-                                    className="flex-1 bg-[#1E234C] hover:bg-[#15193B] text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:-translate-y-0.5"
+                                    onClick={() => handleRehire(worker.id)}
+                                    disabled={!worker.isAvailable || sendingOfferId === worker.id || sentOffers[worker.id]}
+                                    className={`flex-1 font-bold py-3 rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2 ${
+                                        sentOffers[worker.id] 
+                                        ? 'bg-emerald-500 text-white cursor-default' 
+                                        : sendingOfferId === worker.id 
+                                            ? 'bg-gray-200 text-gray-500 cursor-wait' 
+                                            : 'bg-[#1E234C] hover:bg-[#15193B] text-white hover:-translate-y-0.5 disabled:opacity-50'
+                                    }`}
                                 >
-                                    Rehire <ArrowRight size={16} />
+                                    {sentOffers[worker.id] ? (
+                                        <><ShieldCheck size={16} /> Offer Sent ✓</>
+                                    ) : sendingOfferId === worker.id ? (
+                                        'Sending...'
+                                    ) : (
+                                        <>Rehire <ArrowRight size={16} /></>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -177,6 +218,96 @@ const MyWorkers = () => {
                 ))}
             </AnimatePresence>
         </div>
+
+        {/* History Modal */}
+        <AnimatePresence>
+            {selectedWorkerHistory && (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#11111A]/60 backdrop-blur-sm"
+                    onClick={() => setSelectedWorkerHistory(null)}
+                >
+                    <motion.div 
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        onClick={e => e.stopPropagation()}
+                        className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-2xl max-h-[85vh] flex flex-col"
+                    >
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
+                            <div className="flex items-center gap-4">
+                                <img src={selectedWorkerHistory.image} alt={selectedWorkerHistory.name} className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" />
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#11111A] tracking-tight">{selectedWorkerHistory.name}'s History</h3>
+                                    <p className="text-[#4A4A5A] font-medium text-sm">{selectedWorkerHistory.jobsCompleted} Jobs Completed • {selectedWorkerHistory.rating} <Star size={12} className="inline text-orange-500 fill-current mb-1" /></p>
+                                </div>
+                            </div>
+                            <button onClick={() => setSelectedWorkerHistory(null)} className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 transition-colors">
+                                ✕
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto bg-gray-50/50 flex-1">
+                            <div className="space-y-4">
+                                {selectedWorkerHistory.history.map((job) => (
+                                    <div key={job.id} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h4 className="font-bold text-lg text-[#11111A]">{job.title}</h4>
+                                                <p className="text-sm font-medium text-gray-500">{job.date}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-black text-emerald-600 text-lg">{job.paid}</p>
+                                                <div className="flex items-center justify-end gap-1 text-orange-500 text-xs font-bold mt-1">
+                                                    {Array(5).fill(0).map((_, i) => (
+                                                        <Star key={i} size={12} className={i < Math.floor(job.rating) ? "fill-current" : "text-gray-300"} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                            <MapPin size={12} /> {job.location}
+                                        </div>
+                                        <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm text-[#4A4A5A] font-medium italic">
+                                            "{job.review}"
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end gap-3">
+                            <button onClick={() => setSelectedWorkerHistory(null)} className="px-6 py-3 rounded-xl font-bold text-[#4A4A5A] hover:bg-gray-100 transition-colors">Close</button>
+                            <button 
+                                onClick={() => {
+                                    handleRehire(selectedWorkerHistory.id);
+                                    // Optional: close modal after a delay or keep it open so they see the success state
+                                    // setSelectedWorkerHistory(null);
+                                }} 
+                                disabled={!selectedWorkerHistory.isAvailable || sendingOfferId === selectedWorkerHistory.id || sentOffers[selectedWorkerHistory.id]}
+                                className={`px-8 py-3 rounded-xl font-bold transition-all shadow-md flex items-center gap-2 ${
+                                    sentOffers[selectedWorkerHistory.id] 
+                                    ? 'bg-emerald-500 text-white cursor-default' 
+                                    : sendingOfferId === selectedWorkerHistory.id 
+                                        ? 'bg-gray-200 text-gray-500 cursor-wait' 
+                                        : 'bg-[#1E234C] hover:bg-[#15193B] text-white hover:-translate-y-0.5 disabled:opacity-50'
+                                }`}
+                            >
+                                {sentOffers[selectedWorkerHistory.id] ? (
+                                    <><ShieldCheck size={16} /> Offer Sent ✓</>
+                                ) : sendingOfferId === selectedWorkerHistory.id ? (
+                                    'Sending...'
+                                ) : (
+                                    <>Rehire Now <ArrowRight size={16} /></>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
       </div>
     </DashboardLayout>

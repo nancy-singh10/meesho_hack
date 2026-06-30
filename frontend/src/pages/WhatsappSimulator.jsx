@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, MoreVertical, Phone, Video, Mic, Play, Pause } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../config';
+
 
 const WhatsappSimulator = () => {
   const userName = localStorage.getItem('shram_user_name')?.split(' ')[0] || 'Bhaiyya/Didi';
@@ -35,10 +37,11 @@ const WhatsappSimulator = () => {
 
     try {
       const userId = localStorage.getItem('shram_user_id');
-      const res = await fetch('http://127.0.0.1:8000/api/users/parse-whatsapp/', {
+      const userName = localStorage.getItem('shram_user_name') || 'Worker';
+      const res = await fetch(`${API_BASE_URL}/api/users/parse-whatsapp/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: textToSend, user_id: userId, mobile_number: '9876543210' })
+        body: JSON.stringify({ message: textToSend, user_id: userId, mobile_number: '9876543210', user_name: userName })
       });
       const data = await res.json();
       

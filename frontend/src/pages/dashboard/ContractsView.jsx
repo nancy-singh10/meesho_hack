@@ -19,7 +19,7 @@ const ContractsView = () => {
                 status: 'Worker checked in via GPS',
                 time: '08:15 AM',
                 proof_uploaded: true,
-                image: 'https://images.unsplash.com/photo-1541888086925-ebcf4252bc50?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+                image: 'https://images.unsplash.com/photo-1504307651254-35680f356f12?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
             }
         },
         { 

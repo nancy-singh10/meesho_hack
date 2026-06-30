@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../config';
+
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -53,7 +55,7 @@ const VerifyOTP = () => {
     setErrorMsg('');
     
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/verify-otp/', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +85,7 @@ const VerifyOTP = () => {
             if (pendingName) {
                 localStorage.removeItem('pending_signup_name');
                 // Update backend with the new name
-                fetch('http://127.0.0.1:8000/api/users/profile/complete/', {
+                fetch(`${API_BASE_URL}/api/users/profile/complete/`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: data.user_id, name: finalName })
